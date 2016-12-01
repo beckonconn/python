@@ -37,26 +37,27 @@ print "\nElasticsearch Cluster Health Information \n----------------------------
 print "Status: " + json.loads(healthdata)["status"]
 
 # If the status field in the health data array is yellow. Create another request and search for unassigned shards
-try:
-  yellowhunt =  urllib2.urlopen('http://localhost:9200/_cluster/state/')
-except URLError as e:
-  if hasattr(e, reason):
-    print "An error occurred for the following reason: ", e.reason
-  elif hasattr (e, code):
-    print "The server had an issue."
-    print e.code
+if json.loads(healthdata)["status"] == "yellow":
+  try:
+    yellowhunt =  urllib2.urlopen('http://localhost:9200/_cluster/state/')
+  except URLError as e:
+    if hasattr(e, reason):
+      print "An error occurred for the following reason: ", e.reason
+    elif hasattr (e, code):
+      print "The server had an issue."
+      print e.code
 
-yellowhunt_pdata = json.loads(yellowhunt.read()) 
-ypdra_length = len(yellowhunt_pdata["routing_nodes"]["unassigned"])
-unassigned_shards = []
+  yellowhunt_pdata = json.loads(yellowhunt.read()) 
+  ypdra_length = len(yellowhunt_pdata["routing_nodes"]["unassigned"])
+  unassigned_shards = []
 
-for count in range(ypdra_length):
-  if yellowhunt_pdata["routing_nodes"]["unassigned"][count]["state"] == "UNASSIGNED":
-    shard = yellowhunt_pdata["routing_nodes"]["unassigned"][count]["shard"]
-    str(shard)
-    unassigned_shards += [shard]
-# Print the unassigned shards and recommend a solution
-print "The following shards are unassigned: ", unassigned_shards
-print "Try the following solution to solve the issue."
-print "curl -XPUT localhost:9200/_cluster/settings -d \'{ \"transient\" : { \"cluster.routing.allocation.enable\" : \"all\" } }'"
-print "If this solution does not work, further investigation will need to be done."
+  for count in range(ypdra_length):
+    if yellowhunt_pdata["routing_nodes"]["unassigned"][count]["state"] == "UNASSIGNED":
+      shard = yellowhunt_pdata["routing_nodes"]["unassigned"][count]["shard"]
+      str(shard)
+      unassigned_shards += [shard]
+  # Print the unassigned shards and recommend a solution
+  print "The following shards are unassigned: ", unassigned_shards
+  print "Try the following solution to solve the issue."
+  print "curl -XPUT localhost:9200/_cluster/settings -d \'{ \"transient\" : { \"cluster.routing.allocation.enable\" : \"all\" } }'"
+  print "If this solution does not work, further investigation will need to be done."
