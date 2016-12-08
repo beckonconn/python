@@ -1,26 +1,30 @@
 #! /usr/bin/python
 
 # Import necessary modules. These are packaged with standard python.
-import urllib2,json,array
+import sys,urllib2,json,array
 
 # Open the connection
 try:
-  infoconn = urllib2.urlopen('http://localhost:9200/?pretty=1')
-except URLError as e:
-  if hasattr(e, reason):
+  infoconn = urllib2.urlopen('http://localhost:9200/')
+except urllib2.URLError as e:
+  if hasattr(e, 'reason'):
     print "An error occurred for the following reason: ", e.reason
-  elif hasattr (e, code):
+    sys.exit(1)
+  elif hasattr (e, 'code'):
     print "The server had an issue."
     print e.code
+    sys.exit(2)
 
 try:
   healthconn = urllib2.urlopen('http://localhost:9200/_cluster/health')
-except URLError as e:
-  if hasattr(e, reason):
+except urllib2.URLError as e:
+  if hasattr(e, 'reason'):
     print "An error occurred for the following reason: ", e.reason
-  elif hasattr (e, code):
+    sys.exit(3)
+  elif hasattr (e, 'code'):
     print "The server had an issue."
     print e.code
+    sys.exit(4)
 
 # Read data in from connection
 infodata = infoconn.read()
@@ -40,10 +44,10 @@ print "Status: " + json.loads(healthdata)["status"]
 if json.loads(healthdata)["status"] == "yellow":
   try:
     yellowhunt =  urllib2.urlopen('http://localhost:9200/_cluster/state/')
-  except URLError as e:
-    if hasattr(e, reason):
+  except urllib2.URLError as e:
+    if hasattr(e, 'reason'):
       print "An error occurred for the following reason: ", e.reason
-    elif hasattr (e, code):
+    elif hasattr (e, 'code'):
       print "The server had an issue."
       print e.code
 
@@ -60,4 +64,4 @@ if json.loads(healthdata)["status"] == "yellow":
   print "The following shards are unassigned: ", unassigned_shards
   print "Try the following solution to solve the issue."
   print "curl -XPUT localhost:9200/_cluster/settings -d \'{ \"transient\" : { \"cluster.routing.allocation.enable\" : \"all\" } }'"
-  print "If this solution does not work, further investigation will need to be done."
+  print "If this solution does not work, further investigation will need to be done.\n"
